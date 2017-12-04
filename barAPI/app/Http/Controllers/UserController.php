@@ -25,9 +25,15 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $user = User::create($request->all());
-
-        return response()->json($user, 201);
+        $user = new User;
+        $user->user_name = $request->input('user_name');
+        $user->user_firstname = $request->input('user_firstname');
+        $user->user_email = $request->input('user_email');
+        $user->user_password = bcrypt($request->input('user_password'));
+        $user->user_position = $request->input('user_position');
+        if ($user->save()) {
+            return response()->json($user, 201);
+        }
     }
 
     /**
@@ -36,9 +42,14 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user)
+    public function show($id)
     {
-        return response()->json($user, 200);
+        $user = User::find($id);
+        if(!$user)
+            return response()->json(array('error' => true), 400);
+        else {
+            return response()->json($user, 200);
+        }
     }
 
     /**
@@ -50,7 +61,19 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::find($id);
+
+        if(!$user)
+            return response()->json(array('error' => true), 400);
+        else {
+
+            if ($user->update($request->all())) {
+                return response()->json($user, 200);
+            }
+            else {
+                return response()->json(array('error' => true), 400);
+            }
+        }
     }
 
     /**
@@ -59,10 +82,23 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        $user->delete();
-
-        return response()->json(null, 204);
+        $user = User::find($id);
+        if(!$user)
+            return response()->json(array('error' => true), 400);
+        else {
+            $user->delete();
+            return response()->json(null, 204);
+        }
     }
+
+    // public function login($email, $password) {
+    //     $user = User::find($email);
+    //     if(!$user)
+    //         return response()->json(array('error' => true), 400);
+    //     else {
+    //
+    //     }
+    // }
 }
